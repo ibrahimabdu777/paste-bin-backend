@@ -37,6 +37,17 @@ app.get("/pastes/", async (req, res) => {
   });
 });
 
+app.get("/pastes/:id", async (req, res) => {
+  const {id} = req.params
+  const dbres = await client.query('select * from snippets where id=$1', [id]);
+  res.status(200).json({
+    status: "success",
+    data: {
+      snippet: dbres.rows
+    },
+  });
+});
+
 app.post("/pastes/", async (req, res) => {
   
   const {title, text} = req.body
@@ -45,6 +56,26 @@ app.post("/pastes/", async (req, res) => {
     status: 'success', 
     data: {
       snippet: createdSnippet.rows
+    }
+})});
+
+app.patch("/pastes/:id", async (req, res) => {
+  const id = parseInt(req.params.id);
+  const {title, text} = req.body
+  const updatedSnippet = await client.query('update snippets set title = $1, text = $2 where id = $3 returning *', [title, text, id]);
+  res.status(201).json({
+    status: 'success', 
+    data: {
+      snippet: updatedSnippet.rows
+    }
+})});
+app.delete("/pastes/:id", async (req, res) => {
+  const id = parseInt(req.params.id);
+  const deletedSnippet = await client.query('delete from snippets where id=$1 returning *', [id]);
+  res.status(201).json({
+    status: 'success', 
+    data: {
+      snippet: deletedSnippet.rows
     }
 })});
 //Start the server on the given port
